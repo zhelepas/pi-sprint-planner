@@ -17,10 +17,7 @@ function nextHue() {
 function defaultState() {
     return {
         sprints: Array.from({ length: 5 }, (_, i) => ({ id: uid(), name: `Sprint ${i + 1}`, capacity: DEFAULT_CAPACITY })),
-        features: [
-            { id: uid(), name: 'Feature A', hue: HUES[0], stories: [] },
-            { id: uid(), name: 'Feature B', hue: HUES[1], stories: [] }
-        ]
+        features: Array.from({ length: 3 }, (_, i) => ({ id: uid(), name: `Feature ${i + 1}`, hue: HUES[i], stories: [] }))
     };
 }
 
