@@ -202,6 +202,11 @@ function storyChip(story, feature) {
     chip.dataset.storyId = story.id;
     chip.style.setProperty('--h', feature.hue);
 
+    const handle = el('span', 'story-handle', node => {
+        node.textContent = '⠿';
+        node.setAttribute('aria-hidden', 'true');
+    });
+
     const title = nameField('story-title', story.title, value => { story.title = value; save(); });
 
     const points = document.createElement('input');
@@ -222,7 +227,7 @@ function storyChip(story, feature) {
         input.addEventListener('blur', () => { chip.draggable = true; });
     });
 
-    chip.append(title, points, iconButton('Remove story', () => removeStory(story.id)));
+    chip.append(handle, title, points, iconButton('Remove story', () => removeStory(story.id)));
 
     chip.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', story.id);

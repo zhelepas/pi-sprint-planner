@@ -19,6 +19,10 @@
     --chip-accent-l: 45%;
     --col-w: 240px;
     --feat-w: 220px;
+
+    --font-ui: "Bahnschrift", "Archivo Narrow", "Avenir Next Condensed", "DIN Alternate", sans-serif;
+    --font-data: "Cascadia Mono", Consolas, "SF Mono", ui-monospace, monospace;
+    --font-text: Aptos, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
 }
 
 html[data-theme="dark"] {
@@ -48,7 +52,7 @@ html[data-theme="dark"] {
 
 body {
     margin: 0;
-    font: 14px/1.4 "Segoe UI", system-ui, sans-serif;
+    font: 14px/1.4 var(--font-ui);
     color: var(--text);
     background: var(--bg);
     color-scheme: light;
@@ -88,7 +92,6 @@ button {
     border: 1px solid var(--accent);
     background: var(--accent);
     color: #fff;
-    border-radius: 6px;
     cursor: pointer;
 }
 
@@ -119,7 +122,6 @@ button.icon {
     color: var(--muted);
     padding: 2px 5px;
     line-height: 1;
-    border-radius: 4px;
 }
 
 button.icon:hover {
@@ -148,7 +150,6 @@ main {
 .cell {
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 8px;
     padding: 8px;
 }
 
@@ -191,10 +192,10 @@ textarea.story-title {
     flex: 1;
     min-width: 0;
     font: inherit;
+    font-family: var(--font-text);
     color: inherit;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 4px;
     padding: 3px 4px;
     resize: none;
     overflow: hidden;
@@ -226,14 +227,15 @@ textarea.story-title:focus {
 .cap-row input {
     width: 64px;
     font: inherit;
+    font-family: var(--font-data);
     color: inherit;
     background: var(--field-bg);
     padding: 3px 4px;
     border: 1px solid var(--line);
-    border-radius: 4px;
 }
 
 .load {
+    font-family: var(--font-data);
     font-variant-numeric: tabular-nums;
     font-weight: 600;
 }
@@ -307,7 +309,6 @@ textarea.story-title:focus {
     background: hsl(var(--h, 215) 65% var(--chip-accent-l));
     color: #fff;
     font-weight: 600;
-    border-radius: 6px;
     padding: 6px;
 }
 
@@ -319,13 +320,22 @@ textarea.story-title:focus {
     background: hsl(var(--h, 215) var(--chip-s) var(--chip-l));
     border: 1px solid hsl(var(--h, 215) var(--chip-s) var(--chip-border-l));
     border-left: 4px solid hsl(var(--h, 215) 65% var(--chip-accent-l));
-    border-radius: 6px;
     padding: 4px 6px;
-    cursor: grab;
 }
 
 .story.dragging {
     opacity: .45;
+}
+
+.story-handle {
+    flex: none;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    color: var(--muted);
+    cursor: grab;
+    user-select: none;
 }
 
 .story input.points {
@@ -333,10 +343,10 @@ textarea.story-title:focus {
     flex: none;
     text-align: center;
     font: inherit;
+    font-family: var(--font-data);
     font-weight: 600;
     color: inherit;
     border: 1px solid hsl(var(--h, 215) var(--chip-s) var(--chip-border-l));
-    border-radius: 4px;
     background: var(--field-bg);
     padding: 2px;
 }
@@ -345,6 +355,7 @@ textarea.story-title:focus {
 .row-total,
 .total-cell {
     background: var(--total-bg);
+    font-family: var(--font-data);
     font-weight: 600;
     text-align: center;
     font-variant-numeric: tabular-nums;
