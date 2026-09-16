@@ -14,7 +14,17 @@
         <div class="actions">
             <button id="addFeature" type="button" class="primary">+ Add Feature</button>
             <button id="addSprint" type="button" class="primary">+ Add Sprint</button>
-            <button id="exportBtn" type="button" class="ghost">Export</button>
+            <div class="menu" id="exportMenu">
+                <button id="exportBtn" type="button" class="ghost" aria-haspopup="true"
+                    aria-expanded="false">Export ▾</button>
+                <div class="menu-list" role="menu" hidden>
+                    <button type="button" role="menuitem" data-export="json">JSON (re-importable)</button>
+                    <button type="button" role="menuitem" data-export="csv">CSV (spreadsheet)</button>
+                    <button type="button" role="menuitem" data-export="xlsx">Excel (.xlsx, colored)</button>
+                    <button type="button" role="menuitem" data-export="md">Markdown table (Confluence)</button>
+                    <button type="button" role="menuitem" data-export="jpg">JPG image</button>
+                </div>
+            </div>
             <button id="importBtn" type="button" class="ghost">Import</button>
             <button id="themeBtn" type="button" class="ghost">Dark mode</button>
             <button id="resetBtn" type="button" class="danger">Reset</button>

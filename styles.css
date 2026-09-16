@@ -129,6 +129,42 @@ button.icon:hover {
     color: var(--over);
 }
 
+.menu {
+    position: relative;
+    display: flex;
+}
+
+.menu-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 6px 18px #0003;
+}
+
+.menu-list[hidden] {
+    display: none;
+}
+
+.menu-list button {
+    border: none;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+.menu-list button:hover {
+    background: var(--hover);
+    filter: none;
+}
+
 main {
     padding: 16px;
     overflow: auto;

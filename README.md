@@ -12,7 +12,7 @@ A dependency-free HTML/CSS/JavaScript board for the last days of SAFe PI Plannin
 - Drag a story into any sprint cell to plan it; its points immediately count against that sprint's capacity. Dropping it into another feature's row reassigns the feature.
 - Each feature has its own color, shared by all of its story cards.
 - Light and dark mode (follows the OS preference on first load, your choice is remembered).
-- Board state is auto-saved to `localStorage`, plus timestamped JSON export and import.
+- Board state is auto-saved to `localStorage`, plus timestamped exports: JSON (re-importable), CSV, Excel (`.xlsx`, rows tinted with the feature color), Markdown table (for Confluence) and JPG.
 
 ## Usage
 
