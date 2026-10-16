@@ -414,32 +414,62 @@ textarea.story-title:focus {
 
 /* ---- stories ---- */
 .story {
-    display: flex;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
     align-items: flex-start;
     gap: 6px;
     background: hsl(var(--h, 215) var(--chip-s) var(--chip-l));
     border: 1px solid hsl(var(--h, 215) var(--chip-s) var(--chip-border-l));
     border-left: 4px solid hsl(var(--h, 215) 65% var(--chip-accent-l));
     padding: 4px 6px;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-.story.dragging {
-    opacity: .45;
-}
-
-.story-handle {
-    flex: none;
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    padding: 0 2px;
+.story .story-handle {
+    align-self: center;
+    justify-self: center;
     color: var(--muted);
-    cursor: grab;
     user-select: none;
 }
 
-.story input.points {
-    width: 48px;
+.story-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.story-title-row,
+.story-meta-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    min-width: 0;
+}
+
+.story-title-row .story-title {
+    min-width: 0;
+    width: 100%;
+    flex: 1 1 auto;
+}
+
+.story-title-row .icon {
+    flex: none;
+    margin-left: 0;
+}
+
+.story-meta-row {
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.story .points {
+    width: 46px;
+    min-width: 46px;
+    max-width: 46px;
     flex: none;
     text-align: center;
     font: inherit;
@@ -451,33 +481,154 @@ textarea.story-title:focus {
     padding: 2px;
 }
 
-/* ---- totals ---- */
-.row-total,
-.total-cell {
-    background: var(--total-bg);
+.story .story-jira-key {
+    width: 78px;
+    flex: none;
+    min-width: 0;
+    font: inherit;
     font-family: var(--font-data);
-    font-weight: 600;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    padding: 2px 4px;
+    border: 1px solid var(--line);
+    background: var(--field-bg);
+    color: var(--text);
 }
 
-.total-cell small {
-    display: block;
-    font-weight: 400;
+.story-key-row {
+    min-height: 16px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.story-title-row .story-title,
+.story .story-jira-key,
+.story .points {
+    overflow: hidden;
+}
+
+.story .story-title {
+    min-width: 0;
+    width: 100%;
+    padding: 3px 4px;
+}
+
+.story .story-key-row {
+    flex: 1 1 auto;
+}
+
+.story-title-row .story-title {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.story .story-handle {
+    margin-top: 4px;
+}
+
+.story .icon {
+    padding: 2px 5px;
+}
+
+.jira-key-row,
+.story-key-row {
+    min-height: 16px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.jira-key-placeholder {
     color: var(--muted);
+    font-size: 11px;
+    font-style: italic;
+    white-space: nowrap;
 }
 
-.total-cell.ok small {
-    color: var(--ok);
-}
-
-.total-cell.over,
-.total-cell.over small {
-    color: var(--over);
-    font-weight: 700;
+.jira-number-field,
+.story-jira-key {
+    width: 78px;
+    flex: none;
+    min-width: 0;
+    font: inherit;
+    font-family: var(--font-data);
+    font-size: 12px;
+    padding: 2px 4px;
+    border: 1px solid var(--line);
+    background: var(--field-bg);
+    color: var(--text);
 }
 
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
-    opacity: 1;
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.project-config {
+    padding: 16px 0 16px 16px;
+    display: flex;
+}
+
+.config-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    padding: 12px 16px;
+}
+
+.config-header {
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.config-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.config-field input,
+.jira-key-field {
+    width: 100%;
+    min-width: 300px;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    background: var(--field-bg);
+    color: var(--text);
+    border-radius: 0;
+    font: inherit;
+}
+
+.story-jira-key {
+    padding: 2px 5px;
+    border: 1px solid var(--line);
+    background: var(--field-bg);
+    color: var(--text);
+    border-radius: 0;
+    font: inherit;
+}
+
+.config-field input:focus,
+.jira-key-field:focus,
+.story-jira-key:focus {
+    border-color: var(--accent);
+    outline: none;
 }
