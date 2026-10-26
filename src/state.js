@@ -128,14 +128,25 @@ export function normalizeWorkspace(data) {
     return { activeId, projects };
 }
 
+export function normalizeIssueKey(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const explicit = raw.toUpperCase().match(/^([A-Z][A-Z0-9_]*)-(\d+)$/);
+    if (explicit) return explicit[2];
+    const digits = raw.toUpperCase().match(/(\d+)$/);
+    return digits ? digits[1] : '';
+}
+
 export function normalize(data) {
     if (!data || !Array.isArray(data.sprints) || !Array.isArray(data.features)) return null;
     data.features.forEach((f, i) => {
         if (!Array.isArray(f.stories)) f.stories = [];
         if (typeof f.hue !== 'number') f.hue = HUES[i % HUES.length];
         if (typeof f.jiraKey !== 'string') f.jiraKey = '';
+        f.jiraKey = normalizeIssueKey(f.jiraKey);
         f.stories.forEach(story => {
             if (typeof story.jiraKey !== 'string') story.jiraKey = '';
+            story.jiraKey = normalizeIssueKey(story.jiraKey);
             if (typeof story.points !== 'number') story.points = Number(story.points) || 0;
         });
     });

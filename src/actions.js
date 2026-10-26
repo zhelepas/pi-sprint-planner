@@ -244,8 +244,8 @@ function validateIssueCollection(items, label, configuredProjectKey) {
 }
 
 export function importProjectData(data) {
-    const imported = normalize(data);
-    if (!imported) throw new Error('bad shape');
+    const imported = JSON.parse(JSON.stringify(data || {}));
+    if (!imported || !Array.isArray(imported.sprints) || !Array.isArray(imported.features)) throw new Error('bad shape');
 
     const project = activeProject();
     const configuredFeatureKey = normalizeProjectKey(project?.jira?.featureProjectKey);
@@ -261,28 +261,28 @@ export function importProjectData(data) {
     imported.features.forEach(feature => {
         const raw = String(feature?.jiraKey ?? '').trim();
         if (!raw) {
-            feature.jiraKey = featureProjectKey ? `${featureProjectKey}-${String(feature.jiraKey || '').replace(/\D/g, '')}` : '';
+            feature.jiraKey = '';
             return;
         }
         const parsed = parseIssueKey(raw);
         if (!parsed) {
             throw new Error(`Feature key "${raw}" is not a valid Jira issue key.`);
         }
-        feature.jiraKey = `${parsed.projectKey || featureProjectKey}-${parsed.ticket}`;
+        feature.jiraKey = parsed.ticket;
     });
 
     imported.features.forEach(feature => {
         (feature.stories || []).forEach(story => {
             const raw = String(story?.jiraKey ?? '').trim();
             if (!raw) {
-                story.jiraKey = storyProjectKey ? `${storyProjectKey}-${String(story.jiraKey || '').replace(/\D/g, '')}` : '';
+                story.jiraKey = '';
                 return;
             }
             const parsed = parseIssueKey(raw);
             if (!parsed) {
                 throw new Error(`Story key "${raw}" is not a valid Jira issue key.`);
             }
-            story.jiraKey = `${parsed.projectKey || storyProjectKey}-${parsed.ticket}`;
+            story.jiraKey = parsed.ticket;
         });
     });
 

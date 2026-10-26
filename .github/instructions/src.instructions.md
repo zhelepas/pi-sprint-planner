@@ -34,6 +34,9 @@ Applies to all files under `src/`.
 - Do not leave instruction files stale after source refactors.
 
 ## Jira key conventions
+- Store Jira ticket IDs in memory as bare numeric IDs such as `999`; do not persist the project prefix like `PROJECT-999` in the board state or localStorage.
+- Export logic must attach the active feature/story project prefix at export time so the current project key is used for all serialized outputs.
+- Imported JSON payloads may include project prefixes during validation, but once imported they are normalized to the bare ticket number to keep future project-key changes consistent.
 - Exported feature and story keys must include the configured Jira project prefix as `PROJECT-123` when a ticket number is present.
 - JSON import validation must reject inconsistent project prefixes within a feature-story collection and reject missing project prefixes when the frontend configuration is empty.
 - When an imported JSON payload includes a consistent project prefix, that imported prefix overrides the frontend configuration for that collection.

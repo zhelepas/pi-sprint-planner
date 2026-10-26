@@ -19,8 +19,9 @@ export function jiraKey(projectKey, ticketKey) {
     const parsed = parseIssueKey(ticketKey);
     if (!parsed) return '';
     const configured = normalizeProjectKey(projectKey);
+    if (configured) return `${configured}-${parsed.ticket}`;
     if (parsed.projectKey) return `${parsed.projectKey}-${parsed.ticket}`;
-    return configured ? `${configured}-${parsed.ticket}` : parsed.ticket;
+    return parsed.ticket;
 }
 
 function featureExportLabel(feature) {
