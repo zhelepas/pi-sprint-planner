@@ -16,7 +16,15 @@ A dependency-free HTML/CSS/JavaScript board for the last days of SAFe PI Plannin
 
 ## Usage
 
-Open `index.html` in a browser, or use the hosted version linked above. No build step and no server required.
+Serve `index.html` using a local server, e.g.
+
+* `python -m http.server 8000`
+* `npx http-server . -p 8000`
+* `php -S localhost:8000`
+* `ruby -run -e httpd . -p 8000`
+* `cargo install cargo-server; cargo server --port 8000`
+
+or use the hosted version linked above. No build step required.
 
 ## Deployment
 

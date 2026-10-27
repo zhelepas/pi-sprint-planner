@@ -11,13 +11,11 @@
 copilot-session-data/
 
 AGENTS.md
-copilot-instructions.md
 
 .github/agents
 .github/skills
 .github/hooks
 .github/prompts
-.github/instructions
 .github/copilot/settings.local.json
 .claude/settings.local.json
 .rtk/
