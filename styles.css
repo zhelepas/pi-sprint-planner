@@ -263,6 +263,16 @@ main {
 
 .corner {
     background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.buffer-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 2px;
 }
 
 .head {
@@ -344,6 +354,10 @@ textarea.story-title:focus {
     color: var(--ok);
 }
 
+.load.warn {
+    color: var(--warn);
+}
+
 .load.over {
     color: var(--over);
 }
@@ -361,6 +375,10 @@ textarea.story-title:focus {
     width: 0;
     background: var(--ok);
     transition: width .15s;
+}
+
+.bar.warn > span {
+    background: var(--warn);
 }
 
 .bar.over > span {
