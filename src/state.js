@@ -2,6 +2,7 @@ export const STORAGE_KEY = 'pi-sprint-planner-projects-v1';
 export const LEGACY_STORAGE_KEY = 'pi-sprint-planner-v1';
 export const THEME_KEY = 'pi-sprint-planner-theme';
 export const DEFAULT_CAPACITY = 20;
+export const DEFAULT_BUFFER = 0;
 export const HUES = [215, 145, 35, 280, 0, 190, 320, 95, 255, 15, 170, 45];
 
 export let workspace = loadWorkspace();
@@ -49,6 +50,7 @@ export function defaultProjectJira() {
 
 export function defaultState() {
     return {
+        buffer: DEFAULT_BUFFER,
         sprints: Array.from({ length: 5 }, (_, i) => ({ id: uid(), name: `Sprint ${i + 1}`, capacity: DEFAULT_CAPACITY })),
         features: Array.from({ length: 3 }, (_, i) => ({ id: uid(), name: `Feature ${i + 1}`, hue: HUES[i], jiraKey: '', stories: [] }))
     };
@@ -139,7 +141,16 @@ export function normalizeIssueKey(value) {
 
 export function normalize(data) {
     if (!data || !Array.isArray(data.sprints) || !Array.isArray(data.features)) return null;
-    data.features.forEach((f, i) => {
+    const next = {
+        ...data,
+        buffer: Number.isFinite(Number(data.buffer)) ? Math.max(0, Number(data.buffer)) : DEFAULT_BUFFER
+    };
+    next.sprints = (next.sprints || []).map(sprint => {
+        if (!sprint || typeof sprint !== 'object') return sprint;
+        const { buffer: _unusedBuffer, ...cleanSprint } = sprint;
+        return cleanSprint;
+    });
+    next.features.forEach((f, i) => {
         if (!Array.isArray(f.stories)) f.stories = [];
         if (typeof f.hue !== 'number') f.hue = HUES[i % HUES.length];
         if (typeof f.jiraKey !== 'string') f.jiraKey = '';
@@ -150,7 +161,38 @@ export function normalize(data) {
             if (typeof story.points !== 'number') story.points = Number(story.points) || 0;
         });
     });
-    return data;
+    return next;
+}
+
+export function totalSprintCapacity() {
+    const current = getState();
+    return (current.sprints || []).reduce((sum, sprint) => sum + (Number(sprint?.capacity) || 0), 0);
+}
+
+export function totalAllocatedPoints() {
+    return totalPlannedPoints();
+}
+
+export function totalPlannedPoints() {
+    const current = getState();
+    return current.features.reduce((sum, feature) =>
+        sum + feature.stories.reduce((storySum, story) => storySum + (story.sprintId ? (story.points || 0) : 0), 0), 0);
+}
+
+export function bufferUsage() {
+    return Math.max(0, totalPlannedPoints() - totalSprintCapacity());
+}
+
+export function remainingBuffer() {
+    const configured = Number(getState().buffer) || 0;
+    return Math.max(0, configured - bufferUsage());
+}
+
+export function bufferStatusText() {
+    const usage = bufferUsage();
+    const configured = Number(getState().buffer) || 0;
+    if (usage <= configured) return `${usage} of buffer used`;
+    return `${usage - configured} over buffer`;
 }
 
 export function findStory(storyId) {

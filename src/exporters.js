@@ -1,4 +1,4 @@
-import { state, activeProject, fileBase } from './state.js';
+import { state, activeProject, fileBase, bufferUsage, remainingBuffer } from './state.js';
 
 function normalizeProjectKey(projectKey) {
     return String(projectKey ?? '').trim().toUpperCase();
@@ -86,6 +86,11 @@ export function serializeForExport(boardState) {
             jiraKey: jiraKey(storyProjectKey, story.jiraKey)
         }))
     }));
+    clone.sprints = (clone.sprints || []).map(sprint => {
+        const { buffer: _unusedBuffer, ...cleanSprint } = sprint || {};
+        return cleanSprint;
+    });
+    if (typeof clone.buffer !== 'number') clone.buffer = Number(clone.buffer) || 0;
     return clone;
 }
 
@@ -125,11 +130,17 @@ export function csvCell(value) {
 export function grid() {
     const cols = columns();
     const storyProjectKey = activeProject()?.jira?.storyProjectKey || '';
+    const configuredBuffer = Math.max(0, Number(state.buffer) || 0);
+    const usage = bufferUsage();
+    const remaining = remainingBuffer();
+    const statusText = usage <= configuredBuffer ? `${usage} of buffer used` : `${usage - configuredBuffer} over buffer`;
     return {
         cols,
         header: ['Feature', ...cols.map(c => c.name)],
         capacity: ['Capacity', '', ...state.sprints.map(s => s.capacity || 0)],
         planned: ['Planned', columnLoad(null), ...state.sprints.map(s => sprintLoad(s.id))],
+        buffer: ['Buffer', configuredBuffer, '', ...Array(cols.length - 2).fill('')],
+        bufferStatus: ['Buffer status', statusText, ...Array(cols.length - 1).fill('')],
         rows: state.features.map(feature => ({
             feature,
             lists: cols.map(c => storiesIn(feature, c.id).map(s => storyTextLabel(s, storyProjectKey)))
@@ -144,6 +155,8 @@ export function exportCsv() {
         g.header,
         g.capacity,
         g.planned,
+        g.buffer,
+        g.bufferStatus,
         ...g.rows.map(r => [featureExportLabel(r.feature), ...r.lists.map(l => l.join('\n'))]),
         g.total
     ];
@@ -296,6 +309,8 @@ export function exportXlsx() {
     row(g.header.map(v => ({ v, s: STYLE.header })), { height: 22 });
     row(g.capacity.map((v, i) => ({ v, s: i === 0 ? STYLE.label : STYLE.number })));
     row(g.planned.map((v, i) => ({ v, s: i === 0 ? STYLE.label : STYLE.number })));
+    row(g.buffer.map((v, i) => ({ v, s: i === 0 ? STYLE.label : STYLE.number })));
+    row(g.bufferStatus.map((v, i) => ({ v, s: i === 0 ? STYLE.label : STYLE.number })));
 
     const merges = [];
     g.rows.forEach((item, i) => {
@@ -365,7 +380,11 @@ export function exportMarkdown() {
     const cols = columns();
     const baseUrl = activeProject()?.jira?.jiraBaseUrl || '';
     const storyProjectKey = activeProject()?.jira?.storyProjectKey || '';
-    const header = ['Feature', ...cols.map(c => c.id ? `${c.name} (${columnLoad(c.id)}/${c.capacity || 0} pts)` : `${c.name} (${columnLoad(null)} pts)`)];
+    const configuredBuffer = Math.max(0, Number(state.buffer) || 0);
+    const usage = bufferUsage();
+    const remaining = remainingBuffer();
+    const bufferText = usage <= configuredBuffer ? `${usage} of buffer used` : `${usage - configuredBuffer} over buffer`;
+    const header = ['Feature', ...cols.map(c => c.id ? `${c.name} (${columnLoad(c.id)}/${c.capacity || 0} pts)` : `${c.name} (${columnLoad(null)} pts)`)]
 
     const lines = [
         `| ${header.map(mdCell).join(' | ')} |`,
@@ -380,6 +399,7 @@ export function exportMarkdown() {
     });
 
     lines.push(`| Total | ${cols.map(c => columnLoad(c.id)).join(' | ')} |`);
+    lines.push(`| Buffer | ${configuredBuffer} | ${bufferText} |`);
 
     const md = `# ${activeProject().name} — PI Plan — ${new Date().toLocaleString()}\n\n${lines.join('\n')}\n`;
     download(new Blob([md], { type: 'text/markdown;charset=utf-8' }), `${fileBase()}.md`);
@@ -563,9 +583,23 @@ export function exportJpg() {
         y += h + IMG.gap;
     });
 
-    box(IMG.pad, y, IMG.featW, IMG.totalH, colors.total);
-    ctx.font = fontUi(13, 700);
-    drawLines(ctx, ['Total points'], IMG.pad + IMG.cellPad, y + 12, colors.text);
+    const configuredBuffer = Math.max(0, Number(state.buffer) || 0);
+    const usage = bufferUsage();
+    const bufferText = usage <= configuredBuffer ? `${usage} of buffer used` : `${usage - configuredBuffer} over buffer`;
+    const bufferStatus = usage > configuredBuffer ? 'over' : usage > 0 ? 'warn' : 'ok';
+    const footerY = y + 8;
+    const bufferBox = { x: IMG.pad, y: y, w: IMG.featW, h: IMG.totalH };
+    box(bufferBox.x, bufferBox.y, bufferBox.w, bufferBox.h, colors.total);
+    ctx.font = fontUi(12, 700);
+    ctx.fillStyle = bufferStatus === 'over' ? colors.over : bufferStatus === 'warn' ? colors.warn : colors.ok;
+    ctx.fillText('Buffer', bufferBox.x + IMG.cellPad, bufferBox.y + 10);
+    ctx.font = fontData(12);
+    ctx.fillStyle = bufferStatus === 'over' ? colors.over : bufferStatus === 'warn' ? colors.warn : colors.ok;
+    ctx.fillText(String(configuredBuffer), bufferBox.x + IMG.cellPad, bufferBox.y + 24);
+    ctx.font = fontUi(12);
+    ctx.fillStyle = colors.muted;
+    ctx.fillText(bufferText, bufferBox.x + IMG.cellPad + 48, bufferBox.y + 24);
+
     cols.forEach((column, i) => {
         const x = colX(i);
         const used = columnLoad(column.id);

@@ -1,8 +1,8 @@
-import { state, workspace, activeProject, sprintLoad } from './state.js';
+import { state, workspace, activeProject, sprintLoad, bufferUsage } from './state.js';
 import { uiHandlers } from './actions.js';
 
 export const board = document.getElementById('board');
-export const refs = { sprints: new Map(), features: new Map(), backlogLoad: null, backlogTotal: null };
+export const refs = { sprints: new Map(), features: new Map(), backlogLoad: null, backlogTotal: null, totalFooter: null, buffer: null, bufferLoad: null, bufferBar: null, bufferFill: null };
 const configEl = document.getElementById('projectConfig');
 let configRenderTimer = null;
 let configFieldFocus = null;
@@ -52,7 +52,6 @@ function syncIssueInput(projectKey, issueInput, baseUrl, value, keyRow) {
     const nextValue = extractTicketNumber(value);
     if (issueInput.value !== nextValue) issueInput.value = nextValue;
     const prefix = keyRow.querySelector('.jira-key-link, .jira-key-placeholder');
-    const q = projectKey ? `${projectKey}-` : 'Jira';
     const href = jiraIssueHref(baseUrl, projectKey, nextValue);
     if (projectKey) {
         const link = jiraKeyLink(projectKey, nextValue, baseUrl);
@@ -160,11 +159,42 @@ export function renderProjectConfig() {
 export function renderBoard() {
     refs.sprints.clear();
     refs.features.clear();
+    refs.buffer = null;
+    refs.bufferLoad = null;
+    refs.bufferBar = null;
+    refs.bufferFill = null;
+    refs.totalFooter = null;
     board.style.gridTemplateColumns = `var(--feat-w) var(--col-w) repeat(${state.sprints.length}, var(--col-w))`;
     board.replaceChildren();
 
     board.append(el('div', 'cell head corner', c => {
         c.append(el('div', 'feature-meta', d => { d.textContent = 'Features / Sprints'; }));
+        c.append(el('div', 'buffer-cell', b => {
+            b.append(el('div', 'cap-row', r => {
+                r.append(text('Buffer'));
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.step = '1';
+                input.value = state.buffer || 0;
+                input.addEventListener('input', () => {
+                    state.buffer = Math.max(0, Number(input.value) || 0);
+                    uiHandlers.save?.();
+                    refreshTotals();
+                });
+                refs.buffer = input;
+                r.append(input);
+            }));
+            const load = el('span', 'load');
+            refs.bufferLoad = load;
+            b.append(load);
+            const bar = el('div', 'bar');
+            const fill = document.createElement('span');
+            bar.append(fill);
+            refs.bufferBar = bar;
+            refs.bufferFill = fill;
+            b.append(bar);
+        }));
     }));
 
     board.append(el('div', 'cell head col-head', c => {
@@ -188,7 +218,10 @@ export function renderBoard() {
         state.sprints.forEach(sprint => board.append(dropCell(feature, sprint.id)));
     });
 
-    board.append(el('div', 'cell row-total', c => { c.textContent = 'Total points'; }));
+    board.append(el('div', 'cell row-total', c => {
+        refs.totalFooter = c;
+        c.textContent = 'Total points';
+    }));
     board.append(el('div', 'cell total-cell', c => { refs.backlogTotal = c; }));
     state.sprints.forEach(sprint => board.append(el('div', 'cell total-cell', c => {
         const value = document.createElement('span');
@@ -405,6 +438,27 @@ export function refreshTotals() {
 
     if (refs.backlogLoad) setText(refs.backlogLoad, `${backlogPoints} pts`);
     if (refs.backlogTotal) setText(refs.backlogTotal, String(backlogPoints));
+
+    const configured = Math.max(0, Number(state.buffer) || 0);
+    const usage = bufferUsage();
+    const remaining = Math.max(0, configured - usage);
+    const status = usage > configured ? 'over' : usage > 0 ? 'warn' : 'ok';
+    const width = configured > 0 ? Math.min(100, (usage / configured) * 100) : (usage > 0 ? 100 : 0);
+
+    if (refs.buffer) refs.buffer.value = String(configured);
+    if (refs.bufferLoad) {
+        const text = usage <= configured ? `${usage} of buffer used` : `${usage - configured} over buffer`;
+        setText(refs.bufferLoad, text);
+        setClass(refs.bufferLoad, `load ${status}`);
+    }
+    if (refs.bufferBar) {
+        setClass(refs.bufferBar, `bar ${status}`);
+        setStyle(refs.bufferFill, 'width', `${width}%`);
+    }
+    if (refs.totalFooter) {
+        const text = usage <= configured ? `${usage} of buffer used` : `${usage - configured} over buffer`;
+        setText(refs.totalFooter, text);
+    }
 }
 
 export function el(tag, className, build) {
